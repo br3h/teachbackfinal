@@ -7,6 +7,7 @@ import Terms from "@/pages/Terms";
 import DataCompliance from "@/pages/DataCompliance";
 import { Toaster } from "@/components/ui/sonner";
 import { PersonalizationProvider } from "@/context/PersonalizationContext";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   useEffect(() => {
@@ -28,6 +29,7 @@ function App() {
         </PersonalizationProvider>
       </BrowserRouter>
       <Toaster richColors theme="dark" position="top-center" />
+      <Analytics />
     </div>
   );
 }
