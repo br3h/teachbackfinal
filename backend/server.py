@@ -267,44 +267,20 @@ async def get_status_checks():
     return status_checks
 
 
-@api_router.post("/waitlist", response_model=WaitlistResponse)
-async def join_waitlist(payload: WaitlistCreate, request: Request):
-    """Add an email to the TeachBack AI waitlist.
+SUCCESS_MESSAGE = "You're on the list. We'll email you when early access opens."
+DUPLICATE_MESSAGE = "You're already on the waitlist. We'll email you when early access opens."
+CONSENT_REQUIRED_MESSAGE = (
+    "Please accept the Privacy Policy, Terms, and Data & Compliance Notice "
+    "to join the waitlist."
+)
 
-    Required:
-        - email (validated + normalized to lowercase)
-        - consentAccepted = True
 
-    Optional:
-        - persona, mainGoal, subject (validated against allow-lists)
-        - source
-        - hp (honeypot)
-
-    Returns:
-        - status "success" when newly added
-        - status "duplicate" when already on the list
-    """
-    # Honeypot: pretend success without writing
-    if payload.hp:
-        logger.info("Honeypot triggered for waitlist signup; ignoring")
-        return WaitlistResponse(
-            status="success",
-            message="You're on the list. We'll email you when early access opens.",
-        )
-
-    # Consent is required
-    if not payload.consentAccepted:
-        raise HTTPException(
-            status_code=400,
-            detail="Please accept the Privacy Policy, Terms, and Data & Compliance Notice to join the waitlist.",
-        )
-
+def _build_waitlist_entry(payload: WaitlistCreate, request: Request) -> WaitlistEntry:
+    """Build a normalized WaitlistEntry from the request payload + metadata."""
     user_agent = (request.headers.get("user-agent") or "")[:512] or None
-    ip = _client_ip(request)
-    ip_hash = _hash_ip(ip)
+    ip_hash = _hash_ip(_client_ip(request))
     now = datetime.now(timezone.utc)
-
-    entry = WaitlistEntry(
+    return WaitlistEntry(
         email=payload.email,
         persona=payload.persona or "",
         mainGoal=payload.mainGoal or "",
@@ -317,40 +293,61 @@ async def join_waitlist(payload: WaitlistCreate, request: Request):
         userAgent=user_agent,
         ipHash=ip_hash,
     )
+
+
+def _entry_to_mongo_doc(entry: WaitlistEntry) -> dict:
+    """Convert a WaitlistEntry to a MongoDB-friendly document (ISO datetimes)."""
     doc = entry.model_dump()
-    # MongoDB-friendly datetime strings
     doc["createdAt"] = doc["createdAt"].isoformat()
     doc["consentTimestamp"] = doc["consentTimestamp"].isoformat()
+    return doc
+
+
+def _schedule_make_sync(email: str, registered_at_iso: str) -> None:
+    """Fire-and-forget background task to sync to Make.com (Google Sheets).
+
+    Never raises \u2014 a failure here must not affect the user-facing response,
+    because the email is already safely persisted in MongoDB.
+    """
+    try:
+        asyncio.create_task(_post_to_make_webhook(email, registered_at_iso))
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Failed to schedule Make webhook task: %s", exc)
+
+
+@api_router.post("/waitlist", response_model=WaitlistResponse)
+async def join_waitlist(payload: WaitlistCreate, request: Request):
+    """Add an email to the TeachBack AI waitlist.
+
+    Required: email, consentAccepted=True. Optional: persona, mainGoal, subject.
+    Returns status \"success\" when newly added, \"duplicate\" when already present.
+    """
+    # Honeypot: pretend success without writing
+    if payload.hp:
+        logger.info("Honeypot triggered for waitlist signup; ignoring")
+        return WaitlistResponse(status="success", message=SUCCESS_MESSAGE)
+
+    # Consent is required
+    if not payload.consentAccepted:
+        raise HTTPException(status_code=400, detail=CONSENT_REQUIRED_MESSAGE)
+
+    entry = _build_waitlist_entry(payload, request)
+    doc = _entry_to_mongo_doc(entry)
 
     try:
         await db.waitlist.insert_one(doc)
-        logger.info(
-            "Waitlist signup: %s (persona=%s goal=%s subject=%s)",
-            entry.email, entry.persona, entry.mainGoal, entry.subject,
-        )
-        # Fire-and-forget: sync to Make.com -> Google Sheets.
-        # We do NOT await this so the user response is instant, and any
-        # failure here will never affect the success message they see.
-        try:
-            asyncio.create_task(
-                _post_to_make_webhook(entry.email, doc["createdAt"])
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.exception("Failed to schedule Make webhook task: %s", exc)
-        return WaitlistResponse(
-            status="success",
-            message="You're on the list. We'll email you when early access opens.",
-        )
     except DuplicateKeyError:
-        return WaitlistResponse(
-            status="duplicate",
-            message="You're already on the waitlist. We'll email you when early access opens.",
-        )
-    except HTTPException:
-        raise
+        return WaitlistResponse(status="duplicate", message=DUPLICATE_MESSAGE)
     except Exception as exc:  # noqa: BLE001
         logger.exception("Failed to insert waitlist entry: %s", exc)
         raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
+
+    logger.info(
+        "Waitlist signup: %s (persona=%s goal=%s subject=%s)",
+        entry.email, entry.persona, entry.mainGoal, entry.subject,
+    )
+    _schedule_make_sync(entry.email, doc["createdAt"])
+    return WaitlistResponse(status="success", message=SUCCESS_MESSAGE)
 
 
 @api_router.get("/waitlist/count")

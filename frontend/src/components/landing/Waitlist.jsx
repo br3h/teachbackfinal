@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -14,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Confetti from "@/components/landing/Confetti";
+import useWaitlistForm from "@/hooks/useWaitlistForm";
 import {
   usePersonalization,
   STUDY_MODES,
@@ -24,8 +24,6 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-const EMAIL_REGEX = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
 const CONSENT_VERSION = "v1.0";
 
 export default function Waitlist() {
@@ -39,100 +37,40 @@ export default function Waitlist() {
     setPersona,
     ctaHeadline,
   } = usePersonalization();
-
-  const [email, setEmail] = useState("");
-  const [hp, setHp] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [status, setStatus] = useState("idle");
-  const [message, setMessage] = useState("");
   const [showOptions, setShowOptions] = useState(false);
 
-  const validateEmail = (value) => {
-    const v = (value || "").trim();
-    if (!v) return "Please enter your email.";
-    if (v.length > 254) return "That email looks too long.";
-    if (!EMAIL_REGEX.test(v)) return "That email does not look right.";
-    return null;
+  const {
+    email,
+    setEmail,
+    hp,
+    setHp,
+    consent,
+    setConsent,
+    status,
+    message,
+    isLoading,
+    isSuccess,
+    isDuplicate,
+    isError,
+    isDone,
+    canSubmit,
+    submit,
+    reset,
+  } = useWaitlistForm({
+    apiBase: API,
+    consentVersion: CONSENT_VERSION,
+    extras: { persona, mainGoal: studyMode, subject },
+  });
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    reset();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (status === "loading") return;
-
-    const err = validateEmail(email);
-    if (err) {
-      setStatus("error");
-      setMessage(err);
-      return;
-    }
-    if (!consent) {
-      setStatus("error");
-      setMessage(
-        "Please accept the Privacy Policy, Terms, and Data & Compliance Notice to continue."
-      );
-      return;
-    }
-
-    setStatus("loading");
-    setMessage("");
-
-    try {
-      const res = await axios.post(
-        `${API}/waitlist`,
-        {
-          email: email.trim().toLowerCase(),
-          persona: persona || "",
-          mainGoal: studyMode || "",
-          subject: subject || "",
-          consentAccepted: true,
-          consentVersion: CONSENT_VERSION,
-          hp,
-          source: "landing-page",
-        },
-        { timeout: 15000 }
-      );
-      const data = res?.data || {};
-      if (data.status === "duplicate") {
-        setStatus("duplicate");
-        setMessage(
-          data.message ||
-            "You're already on the waitlist. We'll email you when early access opens."
-        );
-      } else {
-        setStatus("success");
-        setMessage(
-          data.message ||
-            "You're on the list. We'll email you when early access opens."
-        );
-      }
-    } catch (err) {
-      const apiMsg =
-        err?.response?.data?.detail ||
-        err?.response?.data?.message ||
-        null;
-      if (err?.response?.status === 422) {
-        setStatus("error");
-        setMessage("That email does not look right. Please try again.");
-      } else if (err?.response?.status === 400 && typeof apiMsg === "string") {
-        setStatus("error");
-        setMessage(apiMsg);
-      } else {
-        setStatus("error");
-        setMessage(
-          typeof apiMsg === "string"
-            ? apiMsg
-            : "Something went wrong. Please try again in a moment."
-        );
-      }
-    }
+  const handleConsentChange = (v) => {
+    setConsent(!!v);
+    if (isError && v) reset();
   };
-
-  const isLoading = status === "loading";
-  const isSuccess = status === "success";
-  const isDuplicate = status === "duplicate";
-  const isError = status === "error";
-  const isDone = isSuccess || isDuplicate;
-  const canSubmit = !isLoading && !isDone && consent && email.trim().length > 0;
 
   return (
     <section
@@ -192,7 +130,7 @@ export default function Waitlist() {
             }}
           >
             <form
-              onSubmit={handleSubmit}
+              onSubmit={submit}
               noValidate
               data-testid="waitlist-form"
               aria-label="Join TeachBack AI waitlist"
@@ -236,13 +174,7 @@ export default function Waitlist() {
                     autoComplete="email"
                     placeholder="you@university.edu"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (status !== "idle" && status !== "loading") {
-                        setStatus("idle");
-                        setMessage("");
-                      }
-                    }}
+                    onChange={handleEmailChange}
                     disabled={isLoading || isDone}
                     aria-invalid={isError}
                     aria-describedby="waitlist-status"
@@ -260,16 +192,7 @@ export default function Waitlist() {
                 >
                   {/* Confetti burst when submission succeeds */}
                   <Confetti trigger={isSuccess} />
-                  {isLoading ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      Joining…
-                    </span>
-                  ) : isDone ? (
-                    "On the list"
-                  ) : (
-                    "Join Waitlist"
-                  )}
+                  <SubmitLabel isLoading={isLoading} isDone={isDone} />
                 </Button>
               </div>
 
@@ -317,13 +240,7 @@ export default function Waitlist() {
                 <Checkbox
                   id="waitlist-consent"
                   checked={consent}
-                  onCheckedChange={(v) => {
-                    setConsent(!!v);
-                    if (isError && v) {
-                      setStatus("idle");
-                      setMessage("");
-                    }
-                  }}
+                  onCheckedChange={handleConsentChange}
                   disabled={isLoading || isDone}
                   className="mt-0.5 h-5 w-5 border-white/20 data-[state=checked]:bg-[#00E5FF] data-[state=checked]:text-[#05070D] data-[state=checked]:border-[#00E5FF] focus-visible:ring-[#00E5FF]/40"
                   data-testid="waitlist-consent-checkbox"
@@ -433,6 +350,19 @@ export default function Waitlist() {
       </div>
     </section>
   );
+}
+
+function SubmitLabel({ isLoading, isDone }) {
+  if (isLoading) {
+    return (
+      <span className="inline-flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        Joining…
+      </span>
+    );
+  }
+  if (isDone) return "On the list";
+  return "Join Waitlist";
 }
 
 function SelectField({ label, value, onChange, options, testId }) {

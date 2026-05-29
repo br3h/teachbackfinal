@@ -163,8 +163,8 @@ export default function IpadPreview({ className = "" }) {
                   </p>
                 </div>
                 <ul className="mt-1.5 space-y-1 text-[10px] text-white/80">
-                  {notes.map((n, i) => (
-                    <li key={i} className="flex items-start gap-1.5">
+                  {notes.map((n) => (
+                    <li key={n} className="flex items-start gap-1.5">
                       <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-white/40" />
                       <span className="truncate">{n}</span>
                     </li>
@@ -185,7 +185,7 @@ export default function IpadPreview({ className = "" }) {
                 </div>
                 <ol className="mt-1.5 space-y-1 text-[10px] text-white/85">
                   {warmups.map((q, i) => (
-                    <li key={i} className="flex gap-1.5">
+                    <li key={q} className="flex gap-1.5">
                       <span className="text-[#00E5FF]/85 font-medium">{i + 1}.</span>
                       <span className="truncate">{q}</span>
                     </li>
@@ -206,39 +206,9 @@ export default function IpadPreview({ className = "" }) {
                 <span className="text-[9px] text-white/40">7-day plan</span>
               </div>
               <div className="mt-1.5 grid grid-cols-7 gap-1">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => {
-                  const done = i < 3;
-                  const today = i === 3;
-                  return (
-                    <div
-                      key={d}
-                      className={`flex flex-col items-center justify-center rounded-md border px-1 py-1 ${
-                        today
-                          ? "border-[rgba(0,229,255,0.5)] bg-[rgba(0,229,255,0.1)]"
-                          : done
-                          ? "border-white/10 bg-[rgba(42,246,214,0.06)]"
-                          : "border-white/10 bg-transparent"
-                      }`}
-                    >
-                      <span
-                        className={`text-[8px] uppercase tracking-wider ${
-                          today ? "text-[#00E5FF]" : "text-white/45"
-                        }`}
-                      >
-                        {d}
-                      </span>
-                      <span
-                        className={`mt-0.5 h-1.5 w-1.5 rounded-full ${
-                          done
-                            ? "bg-[#2AF6D6]"
-                            : today
-                            ? "bg-[#00E5FF]"
-                            : "bg-white/15"
-                        }`}
-                      />
-                    </div>
-                  );
-                })}
+                {WEEK_DAYS.map((d, i) => (
+                  <WeekDayCell key={d} day={d} dayIndex={i} todayIndex={3} />
+                ))}
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <div
@@ -317,6 +287,47 @@ function Stylus() {
             "linear-gradient(90deg, rgba(0,229,255,0.45), rgba(0,229,255,0.85))",
           boxShadow: "0 0 10px rgba(0,229,255,0.7)",
         }}
+      />
+    </div>
+  );
+}
+
+/* ----------------------------- WeekDayCell ----------------------------- */
+const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function getCellClass({ isToday, isDone }) {
+  if (isToday) return "border-[rgba(0,229,255,0.5)] bg-[rgba(0,229,255,0.1)]";
+  if (isDone) return "border-white/10 bg-[rgba(42,246,214,0.06)]";
+  return "border-white/10 bg-transparent";
+}
+
+function getDotClass({ isToday, isDone }) {
+  if (isDone) return "bg-[#2AF6D6]";
+  if (isToday) return "bg-[#00E5FF]";
+  return "bg-white/15";
+}
+
+function WeekDayCell({ day, dayIndex, todayIndex }) {
+  const isToday = dayIndex === todayIndex;
+  const isDone = dayIndex < todayIndex;
+  return (
+    <div
+      className={`flex flex-col items-center justify-center rounded-md border px-1 py-1 ${getCellClass(
+        { isToday, isDone }
+      )}`}
+    >
+      <span
+        className={`text-[8px] uppercase tracking-wider ${
+          isToday ? "text-[#00E5FF]" : "text-white/45"
+        }`}
+      >
+        {day}
+      </span>
+      <span
+        className={`mt-0.5 h-1.5 w-1.5 rounded-full ${getDotClass({
+          isToday,
+          isDone,
+        })}`}
       />
     </div>
   );
