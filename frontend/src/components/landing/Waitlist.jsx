@@ -22,8 +22,7 @@ import {
   DEFAULT_CTA,
 } from "@/context/PersonalizationContext";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = "/api";
 const CONSENT_VERSION = "v1.0";
 
 export default function Waitlist() {
