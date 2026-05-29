@@ -1,42 +1,22 @@
 [
   {
-    "content": "Inspect current backend & frontend implementation",
+    "content": "Remove 'Made with Emergent' badge from index.html",
     "status": "completed"
   },
   {
-    "content": "Update backend: extend waitlist schema with persona/mainGoal/subject/consent fields + reject if no consent",
+    "content": "Create new effect components: ScrollProgress, Spotlight, TiltCard, Confetti, MobileCTA",
     "status": "completed"
   },
   {
-    "content": "Add hero iPad + Apple Pencil composition next to phone (preserve current phone)",
+    "content": "Wire effects into Hero, Waitlist, Research, Trust, Features",
     "status": "completed"
   },
   {
-    "content": "Add Interactive Personalization section (Study Mode + Subject + Persona)",
+    "content": "Mobile polish: 16px input font-size, tap targets, safe-area-inset",
     "status": "completed"
   },
   {
-    "content": "Add Mini Demo / Live Preview section tied to selections",
-    "status": "completed"
-  },
-  {
-    "content": "Update Waitlist form: persona/mainGoal/subject + consent checkbox + .dev emails",
-    "status": "completed"
-  },
-  {
-    "content": "Create /privacy, /terms, /data-compliance pages + routes",
-    "status": "completed"
-  },
-  {
-    "content": "Update Footer with .dev emails + legal links",
-    "status": "completed"
-  },
-  {
-    "content": "Update copy: 'Find your gaps before the test does.' headline + new microcopy",
-    "status": "completed"
-  },
-  {
-    "content": "E2E testing with testing_agent_v3 (58/58 passed = 100%)",
-    "status": "completed"
+    "content": "Lint + E2E testing",
+    "status": "in_progress"
   }
 ]

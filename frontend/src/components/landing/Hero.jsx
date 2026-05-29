@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import AppPreview from "@/components/landing/AppPreview";
 import IpadPreview from "@/components/landing/IpadPreview";
+import Spotlight from "@/components/landing/Spotlight";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function Hero() {
@@ -21,6 +22,7 @@ export default function Hero() {
     const node = sceneRef.current;
     if (!node) return;
     if (window.matchMedia("(max-width: 1023px)").matches) return;
+    if (window.matchMedia("(hover: none)").matches) return;
 
     const onMove = (e) => {
       const rect = node.getBoundingClientRect();
@@ -28,7 +30,6 @@ export default function Hero() {
       const cy = rect.top + rect.height / 2;
       const dx = (e.clientX - cx) / rect.width;
       const dy = (e.clientY - cy) / rect.height;
-      // Clamp to small ranges
       setTilt({
         x: Math.max(-1, Math.min(1, dy)) * -2.2,
         y: Math.max(-1, Math.min(1, dx)) * 2.2,
@@ -70,7 +71,7 @@ export default function Hero() {
               Learn it by
               <span className="block">
                 teaching it{" "}
-                <span className="text-[#00E5FF]">out loud.</span>
+                <span className="tb-text-shimmer">out loud.</span>
               </span>
             </h1>
 
@@ -88,7 +89,7 @@ export default function Hero() {
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Button
                 onClick={scrollTo("waitlist")}
-                className="group rounded-[22px] h-12 px-6 bg-[#00E5FF] text-[#05070D] text-[15px] font-semibold hover:bg-[#00E5FF] hover:brightness-105 hover:shadow-[0_0_0_1px_rgba(0,229,255,0.22),0_0_34px_rgba(0,229,255,0.16)] transition-[box-shadow,filter] duration-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#00E5FF]/40"
+                className="group rounded-[22px] h-12 min-h-[48px] px-6 bg-[#00E5FF] text-[#05070D] text-[15px] font-semibold hover:bg-[#00E5FF] hover:brightness-105 hover:shadow-[0_0_0_1px_rgba(0,229,255,0.22),0_0_34px_rgba(0,229,255,0.16)] transition-[box-shadow,filter] duration-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#00E5FF]/40"
                 data-testid="hero-join-waitlist-button"
               >
                 Join the Waitlist
@@ -100,7 +101,7 @@ export default function Hero() {
               <Button
                 variant="ghost"
                 onClick={scrollTo("solution")}
-                className="rounded-[22px] h-12 px-5 text-white/85 hover:text-white hover:bg-white/5 transition-colors"
+                className="rounded-[22px] h-12 min-h-[48px] px-5 text-white/85 hover:text-white hover:bg-white/5 transition-colors"
                 data-testid="hero-see-how-it-works-button"
               >
                 See how it works
@@ -137,10 +138,11 @@ export default function Hero() {
             <div
               ref={sceneRef}
               className="relative w-full max-w-[640px]"
-              style={{
-                perspective: "1400px",
-              }}
+              style={{ perspective: "1400px" }}
             >
+              {/* Mouse-following spotlight (desktop, hover-capable only) */}
+              <Spotlight color="rgba(0,229,255,0.18)" size={360} />
+
               <div
                 className="relative h-[460px] sm:h-[520px] lg:h-[560px]"
                 style={{
@@ -149,7 +151,6 @@ export default function Hero() {
                   transition: "transform 240ms ease-out",
                 }}
               >
-                {/* iPad placed behind, rotated slightly */}
                 <div
                   className="absolute left-0 top-10 sm:top-14 lg:top-16 hidden sm:block"
                   style={{
@@ -161,18 +162,12 @@ export default function Hero() {
                   <IpadPreview />
                 </div>
 
-                {/* Phone in front-right */}
                 <div
                   className="absolute right-0 -bottom-4 sm:right-2 sm:bottom-0 lg:right-0 lg:-bottom-2 z-20"
                   style={{ transform: "rotate(2deg)" }}
                   data-testid="hero-phone"
                 >
                   <AppPreview size="sm" />
-                </div>
-
-                {/* Mobile fallback: show only phone centered on very small screens */}
-                <div className="sm:hidden absolute inset-0 flex items-center justify-center">
-                  {/* phone already absolutely positioned above; ensure no extra duplicates */}
                 </div>
               </div>
             </div>

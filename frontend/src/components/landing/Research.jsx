@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { BookOpen, FileText, Sparkles } from "lucide-react";
+import TiltCard from "@/components/landing/TiltCard";
 
 /**
  * Research — evidence-backed section. Cites Roediger & Karpicke (2006) and
@@ -205,41 +206,43 @@ function StatCard({
   };
 
   return (
-    <motion.div
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14 }}
-      whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-[24px] border border-white/10 bg-[rgba(10,16,28,0.62)] backdrop-blur-xl p-5 sm:p-6"
-      data-testid={testId}
-    >
-      <div className="flex items-baseline gap-1">
-        {prefix && (
-          <span className={`font-heading text-2xl sm:text-3xl font-semibold ${colorMap[tone]}`}>
-            {prefix}
+    <TiltCard maxTilt={4}>
+      <motion.div
+        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14 }}
+        whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
+        className="rounded-[24px] border border-white/10 bg-[rgba(10,16,28,0.62)] backdrop-blur-xl p-5 sm:p-6"
+        data-testid={testId}
+      >
+        <div className="flex items-baseline gap-1">
+          {prefix && (
+            <span className={`font-heading text-2xl sm:text-3xl font-semibold ${colorMap[tone]}`}>
+              {prefix}
+            </span>
+          )}
+          <span
+            className={`font-heading text-[44px] sm:text-[56px] leading-none font-bold ${colorMap[tone]}`}
+          >
+            {shown}
           </span>
-        )}
-        <span
-          className={`font-heading text-[44px] sm:text-[56px] leading-none font-bold ${colorMap[tone]}`}
-        >
-          {shown}
-        </span>
-        <span className={`font-heading text-2xl sm:text-3xl font-semibold ${colorMap[tone]}`}>
-          {suffix}
-        </span>
-      </div>
-      <p className="mt-3 text-[13px] sm:text-sm text-soft leading-relaxed">
-        {label}
-      </p>
-      <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-white/10">
-        <div
-          className={`h-full rounded-full bg-gradient-to-r ${barFromTo[tone]}`}
-          style={{
-            width: `${Math.min(100, (value / 70) * 100)}%`,
-            transition: "width 80ms linear",
-          }}
-        />
-      </div>
-    </motion.div>
+          <span className={`font-heading text-2xl sm:text-3xl font-semibold ${colorMap[tone]}`}>
+            {suffix}
+          </span>
+        </div>
+        <p className="mt-3 text-[13px] sm:text-sm text-soft leading-relaxed">
+          {label}
+        </p>
+        <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-white/10">
+          <div
+            className={`h-full rounded-full bg-gradient-to-r ${barFromTo[tone]}`}
+            style={{
+              width: `${Math.min(100, (value / 70) * 100)}%`,
+              transition: "width 80ms linear",
+            }}
+          />
+        </div>
+      </motion.div>
+    </TiltCard>
   );
 }

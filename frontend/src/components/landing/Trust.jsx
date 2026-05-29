@@ -8,6 +8,7 @@ import {
   EyeOff,
   Check,
 } from "lucide-react";
+import TiltCard from "@/components/landing/TiltCard";
 
 const CARDS = [
   {
@@ -87,32 +88,33 @@ export default function Trust() {
           {CARDS.map((c, i) => {
             const Icon = c.icon;
             return (
-              <motion.div
-                key={c.title}
-                initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14 }}
-                whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{
-                  duration: 0.45,
-                  delay: i * 0.05,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="group relative rounded-[24px] border border-white/10 bg-[rgba(10,16,28,0.6)] backdrop-blur-xl p-5 sm:p-6 transition-[border-color,box-shadow,transform] duration-200 hover:border-[rgba(0,229,255,0.25)] hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(0,229,255,0.14),0_0_24px_rgba(0,229,255,0.10)]"
-                data-testid={c.test}
-              >
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[rgba(0,229,255,0.06)]">
-                  <Icon
-                    className="h-5 w-5 text-[#00E5FF]"
-                    aria-hidden="true"
-                  />
-                </div>
-                <h3 className="mt-5 font-heading text-[16px] sm:text-[17px] font-semibold text-white">
-                  {c.title}
-                </h3>
-                <p className="mt-2 text-[13px] sm:text-sm text-soft leading-relaxed">
-                  {c.body}
-                </p>
-              </motion.div>
+              <TiltCard key={c.title} maxTilt={5}>
+                <motion.div
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14 }}
+                  whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{
+                    duration: 0.45,
+                    delay: i * 0.05,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="group relative rounded-[24px] border border-white/10 bg-[rgba(10,16,28,0.6)] backdrop-blur-xl p-5 sm:p-6 transition-[border-color,box-shadow] duration-200 hover:border-[rgba(0,229,255,0.25)] hover:shadow-[0_0_0_1px_rgba(0,229,255,0.14),0_0_24px_rgba(0,229,255,0.10)]"
+                  data-testid={c.test}
+                >
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[rgba(0,229,255,0.06)]">
+                    <Icon
+                      className="h-5 w-5 text-[#00E5FF]"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <h3 className="mt-5 font-heading text-[16px] sm:text-[17px] font-semibold text-white">
+                    {c.title}
+                  </h3>
+                  <p className="mt-2 text-[13px] sm:text-sm text-soft leading-relaxed">
+                    {c.body}
+                  </p>
+                </motion.div>
+              </TiltCard>
             );
           })}
         </div>

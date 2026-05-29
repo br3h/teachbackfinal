@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import Confetti from "@/components/landing/Confetti";
 import {
   usePersonalization,
   STUDY_MODES,
@@ -245,7 +246,7 @@ export default function Waitlist() {
                     disabled={isLoading || isDone}
                     aria-invalid={isError}
                     aria-describedby="waitlist-status"
-                    className={`h-12 rounded-[20px] pl-11 pr-4 bg-[rgba(10,16,28,0.6)] border ${
+                    className={`h-12 min-h-[48px] rounded-[20px] pl-11 pr-4 text-base bg-[rgba(10,16,28,0.6)] border ${
                       isError ? "border-[#FF4D6D]/60" : "border-white/10"
                     } text-white placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-[#00E5FF]/40 focus-visible:border-[#00E5FF]/40 transition-[box-shadow,border-color] duration-200`}
                     data-testid="waitlist-email-input"
@@ -254,9 +255,11 @@ export default function Waitlist() {
                 <Button
                   type="submit"
                   disabled={!canSubmit}
-                  className="h-12 rounded-[20px] px-6 bg-[#00E5FF] text-[#05070D] font-semibold hover:bg-[#00E5FF] hover:brightness-105 hover:shadow-[0_0_0_1px_rgba(0,229,255,0.22),0_0_34px_rgba(0,229,255,0.16)] transition-[box-shadow,filter] duration-200 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-[#00E5FF]/40"
+                  className="relative h-12 min-h-[48px] rounded-[20px] px-6 bg-[#00E5FF] text-[#05070D] font-semibold hover:bg-[#00E5FF] hover:brightness-105 hover:shadow-[0_0_0_1px_rgba(0,229,255,0.22),0_0_34px_rgba(0,229,255,0.16)] transition-[box-shadow,filter] duration-200 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-[#00E5FF]/40"
                   data-testid="waitlist-submit-button"
                 >
+                  {/* Confetti burst when submission succeeds */}
+                  <Confetti trigger={isSuccess} />
                   {isLoading ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -322,7 +325,7 @@ export default function Waitlist() {
                     }
                   }}
                   disabled={isLoading || isDone}
-                  className="mt-0.5 border-white/20 data-[state=checked]:bg-[#00E5FF] data-[state=checked]:text-[#05070D] data-[state=checked]:border-[#00E5FF] focus-visible:ring-[#00E5FF]/40"
+                  className="mt-0.5 h-5 w-5 border-white/20 data-[state=checked]:bg-[#00E5FF] data-[state=checked]:text-[#05070D] data-[state=checked]:border-[#00E5FF] focus-visible:ring-[#00E5FF]/40"
                   data-testid="waitlist-consent-checkbox"
                 />
                 <label
@@ -442,7 +445,7 @@ function SelectField({ label, value, onChange, options, testId }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         data-testid={testId}
-        className="w-full h-10 rounded-[14px] bg-[rgba(10,16,28,0.6)] border border-white/10 text-white text-sm px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5FF]/40 focus-visible:border-[#00E5FF]/40"
+        className="w-full h-11 min-h-[44px] rounded-[14px] bg-[rgba(10,16,28,0.6)] border border-white/10 text-white text-base px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5FF]/40 focus-visible:border-[#00E5FF]/40"
       >
         {options.map((o) => (
           <option key={o.id || "none"} value={o.id} className="bg-[#0A1019]">

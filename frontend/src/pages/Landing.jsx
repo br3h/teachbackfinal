@@ -10,6 +10,8 @@ import Trust from "@/components/landing/Trust";
 import Waitlist from "@/components/landing/Waitlist";
 import FAQ from "@/components/landing/FAQ";
 import Footer from "@/components/landing/Footer";
+import ScrollProgress from "@/components/landing/ScrollProgress";
+import MobileCTA from "@/components/landing/MobileCTA";
 
 export default function Landing() {
   return (
@@ -17,6 +19,7 @@ export default function Landing() {
       className="min-h-screen w-full overflow-x-hidden bg-[#05070D] text-white font-body"
       data-testid="landing-page"
     >
+      <ScrollProgress />
       <Navbar />
       <main>
         <Hero />
@@ -31,7 +34,7 @@ export default function Landing() {
         <FAQ />
       </main>
       <Footer />
+      <MobileCTA />
     </div>
   );
-
 }

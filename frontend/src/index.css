@@ -202,6 +202,43 @@ code {
     .tb-float {
         animation: tb-float 7s ease-in-out infinite;
     }
+
+    /* Confetti particle burst (used by Confetti component on waitlist success) */
+    @keyframes tb-confetti-burst {
+        0% {
+            transform: translate(0, 0) scale(0.4);
+            opacity: 0;
+        }
+        12% {
+            opacity: 1;
+        }
+        100% {
+            transform: translate(var(--dx, 0), var(--dy, 0)) scale(1);
+            opacity: 0;
+        }
+    }
+    .tb-confetti-particle {
+        animation-name: tb-confetti-burst;
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        animation-fill-mode: forwards;
+        will-change: transform, opacity;
+    }
+
+    /* Animated cyan -> mint gradient shimmer for the hero "out loud" word */
+    @keyframes tb-shimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    .tb-text-shimmer {
+        background-image: linear-gradient(90deg, #00E5FF 0%, #2AF6D6 35%, #7FF7E0 50%, #2AF6D6 65%, #00E5FF 100%);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        animation: tb-shimmer 6s ease-in-out infinite;
+    }
+
     /* Marquee divider line for solution steps */
     .steps-divider {
         position: absolute;
@@ -219,12 +256,45 @@ code {
         z-index: 0;
     }
     @media (prefers-reduced-motion: reduce) {
-        .tb-float {
-            animation: none;
+        .tb-float,
+        .tb-text-shimmer,
+        .tb-confetti-particle {
+            animation: none !important;
         }
         html {
             scroll-behavior: auto;
         }
+    }
+
+    /* iOS: prevent input auto-zoom on focus (requires >=16px font-size) */
+    input[type="email"],
+    input[type="text"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="password"],
+    select,
+    textarea {
+        font-size: 16px;
+    }
+
+    /* Subtle gradient stroke for section dividers */
+    .tb-section-divider {
+        position: relative;
+    }
+    .tb-section-divider::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(0, 229, 255, 0.18) 50%,
+            transparent 100%
+        );
     }
 }
 
